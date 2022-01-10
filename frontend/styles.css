@@ -1,0 +1,32 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+div{
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center ;
+}
+
+.background {
+  border: 2px rgb(8, 8, 8);
+  background: url("/background\ image\ 1.png");
+  background-position: 100% 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+h1{
+  color: rgb(180, 183, 192);
+  left: 100px;
+  top: -200px;
+  position: static;
+  font-size: 10vh;
+  top: 100px;
+  right: 153px;
+
+}
