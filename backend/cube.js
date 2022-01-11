@@ -3,6 +3,13 @@ var Turn = { F : "f", B : "b", T : "t", U : "u", R : "r", L : "l", C : false, CC
 var edges = [1, 3, 5, 7], corners = [0, 2, 6, 8]; //4 is center
 var changesC  = [6, 2, -2, 4], changesCC = [2, 4, 6, -2];
 var allFaces = ["f", "b", "t", "u", "r", "l"];
+var adjChanges = [ [ [6, 7, 8], [0, 3, 6], [2, 1, 0], [8, 5, 2] ], //f
+                   [ [2, 1, 0], [0, 3, 6], [8, 7, 6], [8, 5, 2] ], //b
+                   [ [2, 1, 0], [2, 1, 0], [2, 1, 0], [2, 1, 0] ], //t
+                   [ [6, 7, 8], [6, 7, 8], [6, 7, 8], [6, 7, 8] ], //u
+                   [ [8, 5, 2], [0, 3, 6], [8, 5, 2], [8, 5, 2] ], //r
+                   [ [0, 3, 6], [0, 3, 6], [0, 3, 6], [8, 5, 2] ], //l
+]; //rT, rR, rU, rL
 
 function checkFace(face) {
     var c = face[4];
@@ -19,6 +26,15 @@ function checkCube(cube) {
     return true
 }
 
+function checkerboard(cube) {
+    cube.turnFace("l", Turn.C); cube.turnFace("l", Turn.C); 
+    cube.turnFace("r", Turn.C); cube.turnFace("r", Turn.C);
+    cube.turnFace("t", Turn.C); cube.turnFace("t", Turn.C);
+    cube.turnFace("u", Turn.C); cube.turnFace("u", Turn.C);
+    cube.turnFace("f", Turn.C); cube.turnFace("f", Turn.C);
+    cube.turnFace("b", Turn.C); cube.turnFace("b", Turn.C);
+    console.log(cube.toString(false));
+}
 
 class Cube {
 
@@ -76,18 +92,31 @@ class Cube {
                 newFace[i] = refFace[i - (counter ? changesCC[8 - i] : changesC[8 - i])];
             }
         }
-        //change side
-        //for side = f, change top 6-8, right 0/3/6, bot 0-2, left 2/5/8
+        //for side = l, change top 0/3/6, front 0/3/6, bot 0/3/6, back 2/5/8
+        var refAdjChanges;
+        switch (side) {
+            case "f": refAdjChanges = 0; break;
+            case "b": refAdjChanges = 1; break;
+            case "t": refAdjChanges = 2; break;
+            case "u": refAdjChanges = 3; break;
+            case "r": refAdjChanges = 4; break;
+            case "l": refAdjChanges = 5; break;
+        }
+        var ref2D = adjChanges[refAdjChanges];
         if (!counter) {
-            relT[6] = refL[8]; relT[7] = refL[5]; relT[8] = refL[2];
-            relR[0] = refT[6]; relR[3] = refT[7]; relR[6] = refT[8];
-            relU[0] = refR[0]; relU[1] = refR[3]; relU[2] = refR[6];
-            relL[2] = refU[0]; relL[5] = refU[1]; relL[8] = refU[2];
+            for (var i = 0; i < 3; i++) { //0 = t, 1 = r, 2 = u, 3 = l
+                relT[ref2D[0][i]] = refL[ref2D[3][i]];
+                relR[ref2D[1][i]] = refT[ref2D[0][i]];
+                relU[ref2D[2][i]] = refR[ref2D[1][i]];
+                relL[ref2D[3][i]] = refU[ref2D[2][i]];
+            }
         } else {
-            relT[6] = refR[0]; relT[7] = refR[3]; relT[8] = refR[6];
-            relR[0] = refU[2]; relR[3] = refU[1]; relR[6] = refU[0];
-            relU[0] = refL[2]; relU[1] = refL[5]; relU[2] = refL[8];
-            relL[2] = refT[6]; relL[5] = refT[7]; relL[8] = refT[8];
+            for (var i = 0; i < 3; i++) {
+                relT[ref2D[0][i]] = refR[ref2D[3][i]];
+                relR[ref2D[1][i]] = refU[ref2D[0][i]];
+                relU[ref2D[2][i]] = refL[ref2D[1][i]];
+                relL[ref2D[3][i]] = refT[ref2D[2][i]];
+            } //clockwise in reverse
         }
         switch (side) {
             case "f": this.f = newFace; this.t = relT; this.u = relU; this.r = relR; this.l = relL; break;
@@ -99,12 +128,11 @@ class Cube {
             default: console.log("Unknown Side");
         }
         this.full = [this.f, this.b, this.t, this.u, this.r, this.l];
-        this.clrs = findColorIndices(this.full);
         this.turns++;
         return
     }
 
-    solveBase() {
+    /*solveBase() {
         var rel;
         while (!checkFace(full[0])) {
             /* cases:
@@ -115,13 +143,19 @@ class Cube {
              * from side to top
              * from top to aligned top
              * from top to base
-             */
+             
             /* corners
              * from bottom to top
              * from top to bottom
              * fiddle corners
-             */
+             
         }
+    }*/
+
+    fiddleCorner(side_a, side_b, side_c) { //f:b, t:u, l:r = 8 combos //f is base, check this corner; turn opposite of this
+        /* given f t r: r cc, t c, rc, t cc, r cc, t c, r c, t cc */
+        this.turnFace(side_c, true); this.turnFace(side_b, false); this.turnFace(side_c, false); this.turnFace(side_b, true);
+        this.turnFace(side_c, true); this.turnFace(side_b, false); this.turnFace(side_c, false); this.turnFace(side_b, true); //1 fiddle/rotation
     }
 
     toString(html) {
@@ -146,31 +180,38 @@ class Cube {
         return s
     }
 }
-
-var fFace = [Color.R, Color.G, Color.O, 
-             Color.B, Color.W, Color.B, 
-             Color.Y, Color.B, Color.O];
-
-var bFace = [Color.O, Color.R, Color.O,
-             Color.W, Color.Y, Color.Y,
-             Color.R, Color.W, Color.G];
-
-var tFace = [Color.W, Color.Y, Color.W,
-             Color.Y, Color.B, Color.R,
-             Color.G, Color.R, Color.G];
-
-var uFace = [Color.R, Color.O, Color.B,
-             Color.R, Color.G, Color.O,
-             Color.R, Color.G, Color.W];
-
-var rFace = [Color.Y, Color.W, Color.B, 
-             Color.W, Color.R, Color.O, 
-             Color.Y, Color.G, Color.B];
-
-var lFace = [Color.G, Color.O, Color.Y,
-             Color.G, Color.O, Color.Y,
-             Color.W, Color.B, Color.B];
-
-var listRepresentation = [fFace, bFace, tFace, uFace, rFace, lFace];
-let rubix = new Cube(listRepresentation);
+var w = "W", y = "Y", b = "B", g = "G", r = "R", o = "O";
+var listRepresentation = [ [w, w, w,
+                            w, w, w,
+                            w, w, w
+                           ],
+                           [
+                            y, y, y,
+                            y, y, y,
+                            y, y, y
+                           ],
+                           [b, b, b,
+                            b, b, b,
+                            b, b, b
+                           ],
+                           [
+                            g, g, g,
+                            g, g, g,
+                            g, g, g
+                           ],
+                           [
+                            r, r, r,
+                            r, r, r,
+                            r, r, r
+                           ],
+                           [
+                            o, o, o,
+                            o, o, o,
+                            o, o, o
+                           ]
+                         ];
+var rubix = new Cube(listRepresentation);
 console.log(rubix.toString(false));
+//rubix.fiddleCorner("f", "t", "l");
+//rubix.fiddleCorner("f", "t", "l");
+checkerboard(new Cube(listRepresentation));
