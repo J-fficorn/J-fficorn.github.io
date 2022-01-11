@@ -1,37 +1,39 @@
-var Color = {
-    W : "W", Y : "Y",
-    B : "B", G : "G",
-    R : "R", O : "O",
-};
-
-var Turn = {
-    F : "f", B : "b",
-    T : "t", U : "u",
-    R : "r", L : "l",
-    C : false, CC: true,
-};
-
-var changesC  = [6, 2, -2, 4];
-var changesCC = [2, 4, 6, -2];
+var Color = { W : "W", Y : "Y", B : "B", G : "G", R : "R", O : "O" };
+var Turn = { F : "f", B : "b", T : "t", U : "u", R : "r", L : "l", C : false, CC: true };
+var edges = [1, 3, 5, 7], corners = [0, 2, 6, 8]; //4 is center
+var changesC  = [6, 2, -2, 4], changesCC = [2, 4, 6, -2];
 var allFaces = ["f", "b", "t", "u", "r", "l"];
+var adjChanges = [ [ [6, 7, 8], [0, 3, 6], [2, 1, 0], [8, 5, 2] ], //f
+                   [ [2, 1, 0], [0, 3, 6], [8, 7, 6], [8, 5, 2] ], //b
+                   [ [2, 1, 0], [2, 1, 0], [2, 1, 0], [2, 1, 0] ], //t
+                   [ [6, 7, 8], [6, 7, 8], [6, 7, 8], [6, 7, 8] ], //u
+                   [ [8, 5, 2], [0, 3, 6], [8, 5, 2], [8, 5, 2] ], //r
+                   [ [0, 3, 6], [0, 3, 6], [0, 3, 6], [8, 5, 2] ], //l
+]; //rT, rR, rU, rL
 
 function checkFace(face) {
-    var c = face[0];
+    var c = face[4];
     for (var i = 1; i < 9; i++) {
-        if (face[i] != c) {
-            return false
-        }
+        if (face[i] != c) { return false }
     }
     return true
 }
     
 function checkCube(cube) {
     for (var i = 0; i < 6; i++) {
-        if (!checkFace(cube.full[i])) {
-            return false
-        }
+        if (!checkFace(cube.full[i])) { return false }
     }
     return true
+}
+
+function checkerboard(cube) {
+    cube.turnFace("l", Turn.C); cube.turnFace("l", Turn.C); 
+    cube.turnFace("r", Turn.C); cube.turnFace("r", Turn.C);
+    cube.turnFace("t", Turn.C); cube.turnFace("t", Turn.C);
+    cube.turnFace("u", Turn.C); cube.turnFace("u", Turn.C);
+    cube.turnFace("f", Turn.C); cube.turnFace("f", Turn.C);
+    cube.turnFace("b", Turn.C); cube.turnFace("b", Turn.C);
+    console.log(cube.toString(false));
 }
 
 class Cube {
@@ -52,48 +54,35 @@ class Cube {
         switch (side) {
             case "f":
                 newFace = [...this.f]; refFace = this.f;
-                relT = [...this.t]; refT = this.t;
-                relU = [...this.u]; refU = this.u;
-                relR = [...this.r]; refR = this.r;
-                relL = [...this.l]; refL = this.l;
+                relT = [...this.t]; refT = this.t; relU = [...this.u]; refU = this.u;
+                relR = [...this.r]; refR = this.r; relL = [...this.l]; refL = this.l;
                 break;
             case "b":
                 newFace = [...this.b]; refFace = this.b;
-                relT = [...this.t]; refT = this.t;
-                relU = [...this.u]; refU = this.u;
-                relR = [...this.l]; refR = this.l;
-                relL = [...this.r]; refL = this.r;
+                relT = [...this.t]; refT = this.t; relU = [...this.u]; refU = this.u;
+                relR = [...this.l]; refR = this.l; relL = [...this.r]; refL = this.r;
                 break;
             case "t":
                 newFace = [...this.t]; refFace = this.t;
-                relT = [...this.b]; refT = this.b;
-                relU = [...this.f]; refU = this.f;
-                relR = [...this.r]; refR = this.r;
-                relL = [...this.l]; refL = this.l;
+                relT = [...this.b]; refT = this.b; relU = [...this.f]; refU = this.f;
+                relR = [...this.r]; refR = this.r; relL = [...this.l]; refL = this.l;
                 break;
             case "u":
                 newFace = [...this.u]; refFace = this.u;
-                relT = [...this.f]; refT = this.f;
-                relU = [...this.b]; refU = this.b;
-                relR = [...this.r]; refR = this.r;
-                relL = [...this.l]; refL = this.l;
+                relT = [...this.f]; refT = this.f; relU = [...this.b]; refU = this.b;
+                relR = [...this.r]; refR = this.r; relL = [...this.l]; refL = this.l;
                 break;
             case "r":
                 newFace = [...this.r]; refFace = this.r;
-                relT = [...this.t]; refT = this.t;
-                relU = [...this.u]; refU = this.u;
-                relR = [...this.b]; refR = this.b;
-                relL = [...this.f]; refL = this.f;
+                relT = [...this.t]; refT = this.t; relU = [...this.u]; refU = this.u;
+                relR = [...this.b]; refR = this.b; relL = [...this.f]; refL = this.f;
                 break;
             case "l":
                 newFace = [...this.l]; refFace = this.l;
-                relT = [...this.t]; refT = this.t;
-                relU = [...this.u]; refU = this.u;
-                relR = [...this.f]; refR = this.f;
-                relL = [...this.b]; refL = this.b;
+                relT = [...this.t]; refT = this.t; relU = [...this.u]; refU = this.u;
+                relR = [...this.f]; refR = this.f; relL = [...this.b]; refL = this.b;
                 break;
-            default:
-                console.log("Unknown Side");
+            default: console.log("Unknown Side");
         }
         for (var i = 0; i < 9; i++) {
             if (i == 4) { continue; }
@@ -103,132 +92,126 @@ class Cube {
                 newFace[i] = refFace[i - (counter ? changesCC[8 - i] : changesC[8 - i])];
             }
         }
-        //change side
-        //for side = f, change top 6-8, right 0/3/6, bot 0-2, left 2/5/8
-        if (!counter) {
-            relT[6] = refL[8]; relT[7] = refL[5]; relT[8] = refL[2];
-            relR[0] = refT[6]; relR[3] = refT[7]; relR[6] = refT[8];
-            relU[0] = refR[0]; relU[1] = refR[3]; relU[2] = refR[6];
-            relL[2] = refU[0]; relL[5] = refU[1]; relL[8] = refU[2];
-        } else {
-            relT[6] = refR[0]; relT[7] = refR[3]; relT[8] = refR[6];
-            relR[0] = refU[2]; relR[3] = refU[1]; relR[6] = refU[0];
-            relU[0] = refL[2]; relU[1] = refL[5]; relU[2] = refL[8];
-            relL[2] = refT[6]; relL[5] = refT[7]; relL[8] = refT[8];
-        }
-        /* t6 = l8, t7 = l5, t8 = l2; +2, -2, -6
-         * r0 = t6, r3 = t7, r6 = t8; +6, +4, +2
-         * b0 = r0, b1 = r3, b2 = r6;  0, +2, +4
-         * l2 = b0, l5 = b1, l8 = b2; -2, -4, -6
-         */
+        //for side = l, change top 0/3/6, front 0/3/6, bot 0/3/6, back 2/5/8
+        var refAdjChanges;
         switch (side) {
-            case "f":
-                this.f = newFace;
-                this.t = relT; this.u = relU;
-                this.r = relR; this.l = relL;
-                break;
-            case "b":
-                this.b = newFace; break;
-                this.t = relT; this.u = relU;
-                this.l = relR; this.r = relL;
-            case "t":
-                this.t = newFace; break;
-                this.b = relT; this.f = relU;
-                this.r = relR; this.l = relL;
-            case "u":
-                this.u = newFace; break;
-                this.f = relT; this.b = relU;
-                this.r = relR; this.l = relL;
-            case "r":
-                this.r = newFace; break;
-                this.t = relT; this.u = relU;
-                this.b = relR; this.f = relL;
-            case "l":
-                this.l = newFace; break;
-                this.t = relT; this.u = relU;
-                this.f = relR; this.b = relL;
-            default:
-                console.log("Unknown Side");
+            case "f": refAdjChanges = 0; break;
+            case "b": refAdjChanges = 1; break;
+            case "t": refAdjChanges = 2; break;
+            case "u": refAdjChanges = 3; break;
+            case "r": refAdjChanges = 4; break;
+            case "l": refAdjChanges = 5; break;
+        }
+        var ref2D = adjChanges[refAdjChanges];
+        if (!counter) {
+            for (var i = 0; i < 3; i++) { //0 = t, 1 = r, 2 = u, 3 = l
+                relT[ref2D[0][i]] = refL[ref2D[3][i]];
+                relR[ref2D[1][i]] = refT[ref2D[0][i]];
+                relU[ref2D[2][i]] = refR[ref2D[1][i]];
+                relL[ref2D[3][i]] = refU[ref2D[2][i]];
+            }
+        } else {
+            for (var i = 0; i < 3; i++) {
+                relT[ref2D[0][i]] = refR[ref2D[3][i]];
+                relR[ref2D[1][i]] = refU[ref2D[0][i]];
+                relU[ref2D[2][i]] = refL[ref2D[1][i]];
+                relL[ref2D[3][i]] = refT[ref2D[2][i]];
+            } //clockwise in reverse
+        }
+        switch (side) {
+            case "f": this.f = newFace; this.t = relT; this.u = relU; this.r = relR; this.l = relL; break;
+            case "b": this.b = newFace; this.t = relT; this.u = relU; this.l = relR; this.r = relL; break;
+            case "t": this.t = newFace; this.b = relT; this.f = relU; this.r = relR; this.l = relL; break;
+            case "u": this.u = newFace; this.f = relT; this.b = relU; this.r = relR; this.l = relL; break;
+            case "r": this.r = newFace; this.t = relT; this.u = relU; this.b = relR; this.f = relL; break;
+            case "l": this.l = newFace; this.t = relT; this.u = relU; this.f = relR; this.b = relL; break;
+            default: console.log("Unknown Side");
         }
         this.full = [this.f, this.b, this.t, this.u, this.r, this.l];
         this.turns++;
         return
     }
 
-    findBase() {
-        var maxBase = 0;
-        var side = "";
-        for (var i = 0; i < 6; i++) {
-            var cur = 0;
-            var mid = this.full[i][4];
-            for (var j = 0; j < 9; j++) {
-                if (this.full[i][j] == mid) {
-                    cur++;
-                }
-            }
-            if (cur > maxBase) {
-                maxBase = cur;
-                side = allFaces[i];
-            }
+    /*solveBase() {
+        var rel;
+        while (!checkFace(full[0])) {
+            /* cases:
+             * sides 1 3 5, top 1 3 5 7 (implement against overcounting overcounted)
+             * so sides top/top side, sides side/connecting side side, sides bottom/connecting bottom side
+             * if 1, spin top until @ color of side
+             * catalog of moves:
+             * from side to top
+             * from top to aligned top
+             * from top to base
+             
+            /* corners
+             * from bottom to top
+             * from top to bottom
+             * fiddle corners
+             
         }
-        console.log(maxBase + side);
-        return side
+    }*/
+
+    fiddleCorner(side_a, side_b, side_c) { //f:b, t:u, l:r = 8 combos //f is base, check this corner; turn opposite of this
+        /* given f t r: r cc, t c, rc, t cc, r cc, t c, r c, t cc */
+        this.turnFace(side_c, true); this.turnFace(side_b, false); this.turnFace(side_c, false); this.turnFace(side_b, true);
+        this.turnFace(side_c, true); this.turnFace(side_b, false); this.turnFace(side_c, false); this.turnFace(side_b, true); //1 fiddle/rotation
     }
 
-    toString() {
+    toString(html) {
         var s = "";
         for (var i = 0; i < 6; i++) {
             switch (i) {
-                case 0: s += "f:\n"; break;
-                case 1: s += "b:\n"; break;
-                case 2: s += "t:\n"; break;
-                case 3: s += "u:\n"; break;
-                case 4: s += "r:\n"; break;
-                case 5: s += "l:\n"; break;
+                case 0: s += "f:"; break;
+                case 1: s += "b:"; break;
+                case 2: s += "t:"; break;
+                case 3: s += "u:"; break;
+                case 4: s += "r:"; break;
+                case 5: s += "l:"; break;
             }
+            s += (html ? "<br>" : "\n");
             for (var j = 0; j < 3; j++) {
-                s += (this.full[i][3 * j] + " " + this.full[i][3 * j + 1] + " " + this.full[i][3 * j + 2] + "\n");
-                //0 1 2, 3 4 5, 6 7 8??
+                s += (this.full[i][3 * j] + " " + this.full[i][3 * j + 1] + " " + this.full[i][3 * j + 2] + (html ? "<br>" : "\n"));
             }
-            s += "\n";
+            s += (html ? "<br>" : "\n");
         }
-        s += "IS RUBIX SOLVED? " + (checkCube(rubix) ? "YES" : "NO") + "\n";
-        s += "NUMBER OF TURNS: " + this.turns + "\n";
+        s += "IS RUBIX SOLVED? " + (this.solved ? "YES" : "NO") + (html ? "<br>" : "\n");
+        s += "NUMBER OF TURNS: " + this.turns + (html ? "<br>" : "\n");
         return s
     }
 }
-
-var fFace = [Color.W, Color.Y, Color.B, 
-             Color.G, Color.R, Color.O, 
-             Color.W, Color.Y, Color.B];
-
-var bFace = [Color.Y, Color.W, Color.G,
-             Color.B, Color.O, Color.W,
-             Color.Y, Color.R, Color.W];
-
-var tFace = [Color.R, Color.G, Color.G,
-             Color.O, Color.G, Color.W,
-             Color.O, Color.R, Color.O];
-
-var uFace = [Color.O, Color.B, Color.W,
-             Color.Y, Color.B, Color.O,
-             Color.G, Color.G, Color.R];
-
-var rFace = [Color.Y, Color.R, Color.O, 
-             Color.W, Color.W, Color.R, 
-             Color.R, Color.Y, Color.B];
-
-var lFace = [Color.Y, Color.B, Color.G,
-             Color.B, Color.Y, Color.O,
-             Color.R, Color.G, Color.B];
-
-var listRepresentation = [fFace, bFace, tFace, uFace, rFace, lFace];
-let rubix = new Cube(listRepresentation);
-console.log(rubix.toString());
-rubix.turnFace(Turn.F, Turn.CC);
-console.log(rubix.toString());
-rubix.turnFace(Turn.F, Turn.C);
-console.log(rubix.toString());
-rubix.turnFace(Turn.T, Turn.C);
-console.log(rubix.toString());
-console.log(rubix.findBase());
+var w = "W", y = "Y", b = "B", g = "G", r = "R", o = "O";
+var listRepresentation = [ [w, w, w,
+                            w, w, w,
+                            w, w, w
+                           ],
+                           [
+                            y, y, y,
+                            y, y, y,
+                            y, y, y
+                           ],
+                           [b, b, b,
+                            b, b, b,
+                            b, b, b
+                           ],
+                           [
+                            g, g, g,
+                            g, g, g,
+                            g, g, g
+                           ],
+                           [
+                            r, r, r,
+                            r, r, r,
+                            r, r, r
+                           ],
+                           [
+                            o, o, o,
+                            o, o, o,
+                            o, o, o
+                           ]
+                         ];
+var rubix = new Cube(listRepresentation);
+console.log(rubix.toString(false));
+//rubix.fiddleCorner("f", "t", "l");
+//rubix.fiddleCorner("f", "t", "l");
+checkerboard(new Cube(listRepresentation));
