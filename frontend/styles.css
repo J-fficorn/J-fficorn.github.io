@@ -3,15 +3,13 @@
   padding: 0;
   box-sizing: border-box;
 }
-div{
+
+.background {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center ;
-}
-
-.background {
   border: 2px rgb(8, 8, 8);
   background: url("/background\ image\ 1.png");
   background-position: 100% 100%;
@@ -26,8 +24,9 @@ body {
 }
 
 .topnav {
+  height: 3.5rem;
   overflow: hidden;
-  background-color: #333;
+  background-color: rgb(100, 107, 114);
 }
 
 .topnav a {
@@ -44,7 +43,7 @@ body {
   color: black;
 }
 
- .topnav a.active {
-            background-color: #04AA6D;
-            color: white;
-        }
+.topnav a.active {
+  background-color: #1a1d24;
+  color: white;
+}
