@@ -3,8 +3,9 @@ var Turn = { F : "f", B : "b", T : "t", U : "u", R : "r", L : "l", C : false, CC
 var edges = [1, 3, 5, 7], corners = [0, 2, 6, 8]; //4 is center
 var changesC  = [6, 2, -2, 4], changesCC = [2, 4, 6, -2];
 var allFaces = ["f", "b", "t", "u", "r", "l"];
+var orderedSides = ["t", "r", "u", "l"];
 var adjChanges = [ [ [6, 7, 8], [0, 3, 6], [2, 1, 0], [8, 5, 2] ], //f
-                   [ [2, 1, 0], [0, 3, 6], [8, 7, 6], [8, 5, 2] ], //b
+                   [ [2, 1, 0], [0, 3, 6], [6, 7, 8], [8, 5, 2] ], //b
                    [ [2, 1, 0], [2, 1, 0], [2, 1, 0], [2, 1, 0] ], //t
                    [ [6, 7, 8], [6, 7, 8], [6, 7, 8], [6, 7, 8] ], //u
                    [ [8, 5, 2], [0, 3, 6], [8, 5, 2], [8, 5, 2] ], //r
@@ -63,6 +64,30 @@ function testTurns(cube) {
     rubix.turnFace("l", true);
     console.log(rubix.toString(false));
     return cube
+}
+
+function specialCube(cube) {
+    rubix.turnFace("r", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("l", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("u", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("t", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("r", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("l", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("u", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("t", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("u", false);
+    console.log(rubix.toString(false));
+    rubix.turnFace("t", false);
+    console.log(rubix.toString(false));
+    return cube    
 }
 
 class Cube {
@@ -198,7 +223,7 @@ class Cube {
         }
     }
 
-    fiddleCorner(side_a, side_b, side_c) { //f:b, t:u, l:r = 8 combos //f is base, check this; turn opposite of this
+    turnCorner(side_a, side_b, side_c) { //f:b, t:u, l:r = 8 combos //f is base, check this; turn opposite of this
         if (side_a == "f") {
             if (side_b == "t") {
                 if (side_c == "l") { //front top left
@@ -271,6 +296,275 @@ class Cube {
         }
     }
 
+    slotSide(side_a, side_b, top_side) { 
+        var left, right; //where left is left-most, right is right-most, top is which side the edge is on
+        if (orderedSides.indexOf(side_a) < orderedSides.indexOf(side_b)) {
+            left = side_a; right = side_b;
+        } else {
+            left = side_b; right = side_a;
+        }
+        //place t & l
+        if ((side_a == "t" && side_b == "l") || (side_b == "t" && side_a == "l")) {
+            switch (side_a) {
+                case "t": left = side_b; right = side_a;
+                case "l": left = side_a; right = side_b;
+            }
+        }
+        switch (top_side) { //u is different! fix this somehow? actually not, ez
+            case right: {
+                this.turnFace(Turn.B, Turn.CC);
+                this.turnFace(left, Turn.CC);
+                this.turnFace(Turn.B, Turn.C);
+                this.turnFace(left, Turn.C);
+                this.turnFace(Turn.B, Turn.C);
+                this.turnFace(right, Turn.C);
+                this.turnFace(Turn.B, Turn.CC);
+                this.turnFace(right, Turn.CC);
+                break;
+                /* away from left (b cc)
+                 * left cc
+                 * b c, l c
+                 * b c, right c
+                 * b cc, right cc
+                */
+            }
+            case left: {
+                this.turnFace(Turn.B, Turn.C);
+                this.turnFace(right, Turn.C);
+                this.turnFace(Turn.B, Turn.CC);
+                this.turnFace(right, Turn.CC);
+                this.turnFace(Turn.B, Turn.CC);
+                this.turnFace(left, Turn.CC);
+                this.turnFace(Turn.B, Turn.C);
+                this.turnFace(left, Turn.C);
+                break;
+                /* away from right (b c)
+                 * right c
+                 * b cc, r cc
+                 * b cc, left cc
+                 * b c, left c
+                */
+            }
+        }
+    }
+
+    solveTop() {
+        var ct = 0, placed = [];
+        for (var i = 0; i < 4; i++) {
+            if (this.b[edges[i]] == this.b[4]) {
+                placed.push(edges[i]);
+                ct++;
+            }
+        }
+        while (ct != 4) {
+            if (ct == 0) {
+                this.turnFace(Turn.T, Turn.C);
+                this.turnFace(Turn.R, Turn.C);
+                this.turnFace(Turn.B, Turn.C);
+                this.turnFace(Turn.R, Turn.CC);
+                this.turnFace(Turn.B, Turn.CC);
+                this.turnFace(Turn.T, Turn.CC);
+                break;
+            } else if (ct == 2) {
+                this.findTopSides(placed[0], placed[1]);
+            }
+            ct = 0;
+            for (var i = 0; i < 4; i++) {
+                if (this.b[edges[i]] == this.b[4]) {
+                    ct++;
+                }
+            }
+        }
+        while (this.t[1] != this.t[4] || this.u[7] != this.u[4] || this.r[5] != this.r[4] || this.l[3] != this.l[4]) {
+            for (var i = 0; i < 4; i++) {
+                var e = edges[i];
+                var refSide, refL, refR;
+                var rS, rL, rR;
+                var sS, sL, sR;
+                switch (e) {
+                    case 1: {
+                        refSide = Turn.T; refL = Turn.L; refR = Turn.R;
+                        rS = this.t; rL = this.l; rR = this.r;
+                        sS = 1; sL = 3; sR = 5;
+                        break; //t
+                    }
+                    case 3: {
+                        refSide = Turn.R; refL = Turn.T; refR = Turn.U;
+                        rS = this.r; rL = this.t; rR = this.u;
+                        sS = 5; sL = 1; sR = 7;
+                        break; //r
+                    }
+                    case 5: {
+                        refSide = Turn.L; refL = Turn.U; refR = Turn.T;
+                        rS = this.l; rL = this.u; rR = this.t;
+                        sS = 3; sL = 7; sR = 1;
+                        break; //l
+                    }
+                    case 7: {
+                        refSide = Turn.U; refL = Turn.R; refR = Turn.L;
+                        rS = this.u; rL = this.r; rR = this.l;
+                        sS = 7; sL = 5; sR = 3;
+                        break; //u
+                    }
+                }
+                if (rS[sS] == rL[4]) { //opposite
+                    if (rL[sL] != rS[4]) { //other side not opposite
+                        this.turnFace(Turn.B, Turn.C);
+                    } else {
+                        this.slotTopSides(refR);
+                    }
+                }
+                /* detect misaligned edges
+                * edge case: three that need swapping
+                * if 1 is not aligned, check if the left-side is opposite aligned & side is op aligned
+                * if so, run slot on right of top
+                * if next is not opposite but IS misaligned, rotate once left
+                * if 1 is not aligned and not opposite, rotate once right
+                */
+            }
+        }
+    }
+
+    findTopSides(placed_a, placed_b) { //repeat on x turns
+        var shape; //1 for L, 2 for hori
+        var relT, relR;
+        if ((placed_a == 1 && placed_b == 3) ||(placed_a == 3 && placed_b == 1))  {
+            relT = Turn.U; relR = Turn.L; shape = 1;
+        } else if ((placed_a == 1 && placed_b == 5) || (placed_a == 5 && placed_b == 1)) {
+            relT = Turn.R; relR = Turn.U; shape = 1;
+        } else if ((placed_a == 5 && placed_b == 7) || (placed_a == 7 && placed_b == 5)) {
+            relT = Turn.T; relR = Turn.R; shape = 1;
+        } else if ((placed_a == 3 && placed_b == 7) || (placed_a == 5 && placed_b == 7)) {
+            relT = Turn.L; relR = Turn.T; shape = 1;
+        } else if ((placed_a == 3 && placed_b == 5) || (placed_a == 5 && placed_b == 3)) {
+            relT = Turn.T; relR = Turn.R; shape = 2;
+        } else if ((placed_a == 1 && placed_b == 7) ||(placed_a == 7 && placed_b == 1)) {
+            relT = Turn.L; relR = Turn.T; shape = 2;
+        }
+        switch (shape) {
+            case 1: {
+                this.turnFace(relT, Turn.C);
+                this.turnFace(Turn.B, Turn.C);
+                this.turnFace(relR, Turn.C);
+                this.turnFace(Turn.B, Turn.CC);
+                this.turnFace(relR, Turn.CC);
+                this.turnFace(relT, Turn.CC);
+                break;
+            }
+            case 2: {
+                this.turnFace(relT, Turn.C);
+                this.turnFace(relR, Turn.C);
+                this.turnFace(Turn.B, Turn.C);
+                this.turnFace(relR, Turn.CC);
+                this.turnFace(Turn.B, Turn.CC);
+                this.turnFace(relT, Turn.CC);
+                break;
+            }
+        }
+    }
+
+    slotTopSides(relR) { //where relR is to the right of misplaced/swapped edge
+        this.turnFace(relR, Turn.C);
+        this.turnFace(Turn.B, Turn.C);
+        this.turnFace(relR, Turn.CC);
+        this.turnFace(Turn.B, Turn.C);
+        this.turnFace(relR, Turn.C);
+        this.turnFace(Turn.B, Turn.C); this.turnFace(Turn.B, Turn.C);
+        this.turnFace(relR, Turn.CC);
+        this.turnFace(Turn.B, Turn.C);
+    }
+
+    findCorners() {
+        var cornerLoc, cornerFound;
+        for (var i = 0; i < 4; i++) {
+            var clrs = [this.b[4]];
+            var cornerClrs = [this.b[corners[i]]];
+            var matched = [false, false, false];
+            switch (corners[i]) {
+                case 0: {
+                    cornerClrs.push(this.t[2]); cornerClrs.push(this.r[2]);
+                    clrs.push(this.t[4]); clrs.push(this.r[4]);
+                    break;
+                }
+                case 2: {
+                    cornerClrs.push(this.l[0]); cornerClrs.push(this.t[0]);
+                    clrs.push(this.l[4]); clrs.push(this.t[4]);
+                    break;
+                }
+                case 6: {
+                    cornerClrs.push(this.r[8]); cornerClrs.push(this.u[8]);
+                    clrs.push(this.r[4]); clrs.push(this.u[4]);
+                    break;
+                }
+                case 8: {
+                    cornerClrs.push(this.u[6]); cornerClrs.push(this.l[6]);
+                    clrs.push(this.u[4]); clrs.push(this.l[4]);
+                    break;
+                }
+            }
+            for (var j = 0; j < 3; j++) {
+                var refC = cornerClrs[j];
+                for (var k = 0; k < 3; k++) {
+                    var targetC = clrs[k];
+                    if (refC == targetC) {
+                        matched[j] = true;
+                    }
+                    //if not matched, try to match
+                    //if all matched, end
+                }
+            }
+            cornerFound = true;
+            for (var j = 0; j < 3; j++) {
+                if (!matched[j]) {
+                    cornerFound = false;
+                }
+            }
+            if (cornerFound) {
+                cornerLoc = corners[i];
+            }
+            /* 0 = t 2 r 2
+             * 2 = l 0 t 0
+             * 6 = u 8 r 8
+             * 8 = l 6 r 6
+             * must match all three sides
+             */
+        }
+        var relR, relL;
+        switch (cornerLoc) {
+            case 0:
+                relR = Turn.R; relL = Turn.L;
+                break;
+            case 2:
+                relR = Turn.T; relL = Turn.U;
+                break;
+            case 6:
+                relR = Turn.L; relL = Turn.R;
+                break;
+            case 8:
+                relR = Turn.U; relL = Turn.T;
+                break;
+        }
+        this.turnFace(Turn.B, Turn.C);
+        this.turnFace(relR, Turn.C);
+        this.turnFace(Turn.B, Turn.CC);
+        this.turnFace(relL, Turn.CC);
+        this.turnFace(Turn.B, Turn.C);
+        this.turnFace(relR, Turn.CC);
+        this.turnFace(Turn.B, Turn.CC);
+        this.turnFace(relL, Turn.C);
+    }
+
+    slotTopCorners() {
+        while (this.b[0] != this.b[4] || this.b[2] != this.b[4] || this.b[6] != this.b[4] || this.b[8] != this.b[4]) {
+            this.turnCorner(this.b, this.t, this.r); this.turnFace(Turn.B);
+        }
+    }
+
+    placeCorner(relT, relR) { //where corner is above appropriate spot
+        this.turnFace(relT, Turn.C); this.turnFace(relR, Turn.CC);
+        this.turnFace(relT, Turn.CC); this.turnFace(relR, Turn.C);
+    }
+
     toString(html) {
         var s = "";
         for (var i = 0; i < 6; i++) {
@@ -299,30 +593,40 @@ var solvedCubeList = [ [w, w, w,
                         w, w, w
                        ],
                        [
+                        y, y, r,
                         y, y, y,
-                        y, y, y,
-                        y, y, y
+                        g, y, b
                        ],
-                       [b, b, b,
+                       [b, o, g,
                         b, b, b,
                         b, b, b
                        ],
                        [
                         g, g, g,
                         g, g, g,
-                        g, g, g
+                        y, g, o
                        ],
                        [
-                        r, r, r,
-                        r, r, r,
-                        r, r, r
+                        r, r, o,
+                        r, r, b,
+                        r, r, y
                        ],
                        [
-                        o, o, o,
-                        o, o, o,
+                        y, o, o,
+                        r, o, o,
                         o, o, o
                        ]
 ];
 var solvedCube = new Cube(solvedCubeList);
 var rubix = new Cube([...solvedCubeList]);
+console.log(rubix.toString(false));
+/*rubix.slotSide(Turn.U, Turn.L, Turn.L);
+console.log(rubix.toString(false));*/
+rubix.solveTop();
+console.log(rubix.toString(false));
+//rubix.turnFace(Turn.B, Turn.C); rubix.turnFace(Turn.B, Turn.C);
+console.log(rubix.toString(false));
+rubix.findCorners();
+console.log(rubix.toString(false));
+rubix.slotTopCorners();
 console.log(rubix.toString(false));
