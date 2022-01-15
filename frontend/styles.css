@@ -44,6 +44,10 @@ body {
 }
 
 .naviagtionBar a.active {
-  background-color: #294992;
+ rgb(100, 107, 114);
   color: white;
+}
+
+.cubeLogo{
+  height: 3px;
 }
