@@ -12,9 +12,7 @@
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
-
   background-attachment: fixed;
-
 }
 
 .cubeSolverBackground{
@@ -23,7 +21,6 @@
   justify-content: center;
   align-items: center;
   text-align: center ;
-  
   background-image: linear-gradient(to top left, #bdc3c7, #2c3e50) ;
   background-position: 100% 100%;
   background-repeat: no-repeat;
@@ -74,6 +71,7 @@ left: 50
   position: absolute;
   left: 50%;
   top: 50%;
+  
 }
 
 .box-area {
@@ -90,6 +88,10 @@ left: 50
     transform: rotate3d(1, 1, 0, 360deg);
     ;
   }
+}
+
+.rotate: hover{
+  
 }
 
 .box {
@@ -163,7 +165,6 @@ left: 50
 }
 
 .bg-bottom {
-
   background: rgb(235, 145, 1);
 }
 
