@@ -170,3 +170,7 @@ left: 50
 .bg-front {
   background: rgb(255, 255, 255);
 }
+
+.cc{
+transform: translateX(-12.5vh);
+}
