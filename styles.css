@@ -81,7 +81,7 @@ left: 50
   animation: rotate 3s linear infinite ;
 }
 
-/* @keyframes rotate {
+ @keyframes rotate {
   0% {
     transform: rotate3d(0, 0, 0, 0);
   }
@@ -89,7 +89,7 @@ left: 50
     transform: rotate3d(1, 1, 0, 360deg);
     ;
   }
-} */
+} 
 
 .box {
   position: absolute;
